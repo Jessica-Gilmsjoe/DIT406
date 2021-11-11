@@ -23,10 +23,19 @@ houses = pd.read_csv("data_assignment2.csv")
 #%%
 ### Question 1
 # a)
-
+plt.scatter(houses[['Living_area']], houses[['Selling_price']])
+plt.show()
+#%%
 # Model linear regression area and price
 model = LinearRegression().fit(houses[['Living_area']], houses[['Selling_price']])
+#%%
+xfit=np.linspace(min(houses['Living_area']),max(houses['Living_area']), 1000) #1000 evenly spaced points in [0, 55].
+yfit=model.predict(xfit[:, np.newaxis])
+plt.scatter(houses[['Living_area']], houses[['Selling_price']])
+plt.plot(xfit, yfit)
+plt.show()
 
+#%%
 # b)
 
 # slope
@@ -64,16 +73,28 @@ iris['species'] = iris_raw.target
 iris['species'] = iris['species'].replace(to_replace= [0, 1, 2], 
     value = ['setosa', 'versicolor', 'virginica'])
 
+sns.FacetGrid(iris, hue ="species",
+              height = 6).map(plt.scatter,
+                              'sepal length (cm)',
+                              'petal length (cm)').add_legend()
+#%%
 x_train, x_test, y_train, y_test = train_test_split(iris[iris.columns[0:4]], 
                                                     iris[['species']], 
                                                     test_size=0.25, random_state=0)
 
 model = LogisticRegression().fit(x_train, y_train)
-plot_confusion_matrix(model,x_test,y_test)
+plot_confusion_matrix(model,x_test,y_test, cmap='Blues')
 
 #%%
+# b)
 ## knn
 k = 3
-neigh = KNeighborsClassifier(n_neighbors=k)
-neigh.fit(iris[iris.columns[0:4]], iris[['species']])
+knn = KNeighborsClassifier(n_neighbors=k)
+knn.fit(x_train, y_train)
+#%%
 
+y_pred = knn.predict(x_test)
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))   
+
+plot_confusion_matrix(model_knn,x_test,y_test, cmap='Blues')
+       
