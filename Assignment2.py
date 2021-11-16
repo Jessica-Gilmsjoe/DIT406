@@ -11,6 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import linear_model
+from sklearn import metrics
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -80,21 +81,85 @@ sns.FacetGrid(iris, hue ="species",
 #%%
 x_train, x_test, y_train, y_test = train_test_split(iris[iris.columns[0:4]], 
                                                     iris[['species']], 
-                                                    test_size=0.25, random_state=0)
+                                                    test_size=0.40, random_state=0)
 
 model = LogisticRegression().fit(x_train, y_train)
-plot_confusion_matrix(model,x_test,y_test, cmap='Blues')
 
+fig = plt.figure()
+plot_confusion_matrix(model,x_test,y_test, cmap='Blues')
+plt.title('Confusion matrix logistic regression')
+
+y_pred=model.predict(x_test)
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 #%%
 # b)
 ## knn
-k = 3
-knn = KNeighborsClassifier(n_neighbors=k)
-knn.fit(x_train, y_train)
+k = 5
+knn = KNeighborsClassifier(n_neighbors=k, weights = 'uniform')
+knn.fit(x_train, y_train) 
+
 #%%
-
-y_pred = knn.predict(x_test)
-print("Accuracy:",metrics.accuracy_score(y_test, y_pred))   
-
-plot_confusion_matrix(model_knn,x_test,y_test, cmap='Blues')
+y_pred=knn.predict(x_test)
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+#%%
+plot_confusion_matrix(knn,x_test,y_test, cmap='Blues')
        
+#%%
+pred = knn.predict(x_test)
+cm = confusion_matrix(y_test, pred)
+
+ax = sns.heatmap(cm, annot=True, cmap='Blues')
+
+ax.set_title('Confusion Matrix Knn\n\n');
+ax.set_xlabel('\nPredicted Values')
+ax.set_ylabel('Actual Values ');
+
+ax.xaxis.set_ticklabels(['Setosa','Vercicolor', 'Virginica'])
+ax.yaxis.set_ticklabels(['Setosa','Vercicolor', 'Virginica'])
+
+plt.show()
+
+#%%
+classifiers = [KNeighborsClassifier(n_neighbors=1, weights = 'uniform'), 
+               KNeighborsClassifier(n_neighbors=5, weights = 'uniform'),
+               KNeighborsClassifier(n_neighbors=10, weights = 'uniform'), 
+               KNeighborsClassifier(n_neighbors=20, weights = 'uniform')]
+
+for cls in classifiers:
+    cls.fit(x_train, y_train)
+    
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(15,10))
+
+for cls, ax in zip(classifiers, axes.flatten()):
+    plot_confusion_matrix(cls, 
+                          x_test, 
+                          y_test, 
+                          ax=ax, 
+                          cmap='Blues',
+                         display_labels=['Setosa','Vercicolor', 'Virginica'])
+    ax.set_title('Neighbors = '+str(cls.n_neighbors))
+plt.tight_layout()  
+plt.show()
+
+#%%
+classifiers = [KNeighborsClassifier(n_neighbors=1, weights = 'distance'), 
+               KNeighborsClassifier(n_neighbors=5, weights = 'distance'),
+               KNeighborsClassifier(n_neighbors=10, weights = 'distance'), 
+               KNeighborsClassifier(n_neighbors=20, weights = 'distance')]
+
+for cls in classifiers:
+    cls.fit(x_train, y_train)
+    
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(15,10))
+
+for cls, ax in zip(classifiers, axes.flatten()):
+    plot_confusion_matrix(cls, 
+                          x_test, 
+                          y_test, 
+                          ax=ax, 
+                          cmap='Blues',
+                         display_labels=['Setosa','Vercicolor', 'Virginica'])
+    ax.set_title('Neighbors = '+str(cls.n_neighbors))
+plt.tight_layout()  
+plt.show()
+
